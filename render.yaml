@@ -1,0 +1,87 @@
+# Render Blueprint Configuration
+# This file defines all services needed for the Eggcellent Sales application
+# 
+# To deploy: render-blueprint render.yaml
+
+services:
+  # ==================== DATABASE ====================
+  # PostgreSQL Database (Free on Render)
+  - name: eggcellent-db
+    type: postgresql
+    plan: free  # Use "starter" for production
+    version: 15
+    disk:
+      sizeGB: 1
+
+  # ==================== BACKEND ====================
+  # Django Backend API
+  - name: eggcellent-backend
+    type: web
+    plan: free  # Use "starter" or "standard" for production
+    runtime: docker
+    dockerfilePath: ../eggcellent_backend/Dockerfile
+    dockerContext: ../
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: POSTGRES_DATABASE
+        fromDatabase:
+          name: eggcellent-db
+          property: database
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: eggcellent-db
+          property: username
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: eggcellent-db
+          property: password
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: eggcellent-db
+          property: hostname
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: eggcellent-db
+          property: port
+      - key: EMAIL_HOST_USER
+        value: Eggcellentsales60@gmail.com
+      - key: EMAIL_HOST_PASSWORD
+        value: jjpicurzkqgmvbhn
+      - key: EMAIL_USE_TLS
+        value: "True"
+      - key: EMAIL_PORT
+        value: "587"
+      - key: DEFAULT_FROM_EMAIL
+        value: Eggcellentsales60@gmail.com
+      - key: MPESA_ENVIRONMENT
+        value: sandbox
+      - key: MPESA_CONSUMER_KEY
+        value: xRQZ2rUAIFk3yRvMl2U06vyJUnGsODGz4AKnpvam5ZlmDmSC
+      - key: MPESA_CONSUMER_SECRET
+        value: ROWHHb2vThJm2BiE3c2AzPF1OlJqy4MKlYRObk7A5zqSPTklQzDGPGSiapZuGnTL
+      - key: MPESA_PASSKEY
+        value: bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919
+      - key: MPESA_SHORTCODE
+        value: "174379"
+      - key: MPESA_SHORTCODE_PARTY_B
+        value: "174379"
+      - key: MPESA_INITIATOR_NAME
+        value: testapi
+      - key: MPESA_INITIATOR_PASSWORD
+        value: bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72e1f46cc263
+
+  # ==================== FRONTEND ====================
+  # React Frontend
+  - name: eggcellent-frontend
+    type: web
+    plan: free  # Use "starter" or "standard" for production
+    runtime: docker
+    dockerfilePath: Dockerfile.frontend
+    dockerContext: .
+    envVars:
+      - key: VITE_API_URL
+        # After deploying backend, update this with your actual backend URL
+        value: https://eggcellent-backend.onrender.com/api
